@@ -27,7 +27,8 @@ void TestAll() {
     TestDate();
     TestDateTime();
     TestTimediff();
-  } catch (...) {
+  } catch (std::exception& e) {
+    std::cout << e.what() << std::endl;
     assert(false);
   }
 }
@@ -35,6 +36,54 @@ void TestAll() {
         Tests for class `Time`
 */
 void TestTime() {
+  {
+    // Default constructor
+    date_time::Time tm;
+    assert(0 == tm.hour());
+    assert(0 == tm.minute());
+    assert(0 == tm.second());
+    assert(std::string("00:00:00") == date_time::ToString(tm));
+  }
+
+  {  // seconds since_midnight 0
+    date_time::Time tm(0);
+    assert(0 == tm.seconds_since_midnight());
+  }
+  {  // seconds since_midnight 43200
+    date_time::Time tm(12, 0, 0);
+    assert(43200 == tm.seconds_since_midnight());
+  }
+
+  {  // seconds since_midnight 86399
+    date_time::Time tm(23, 59, 59);
+    assert(86399 == tm.seconds_since_midnight());
+  }
+
+  {  // add seconds 10800
+    date_time::Time tm(0);
+    tm.AddSeconds(10800);
+    assert(10800 == tm.seconds_since_midnight());
+  }
+
+  {  // add minutes
+    date_time::Time tm(0);
+    tm.AddMinutes(1200);
+    assert(72000 == tm.seconds_since_midnight());
+  }
+
+  {  // add hours 3
+    date_time::Time tm(0);
+    tm.AddHours(3);
+    assert(10800 == tm.seconds_since_midnight());
+  }
+
+  {  // add days
+    date_time::Time tm1(0);
+    date_time::Time tm2(23, 59, 59);
+    tm1.AddHours(25);
+    assert(tm2.seconds_since_midnight() == tm1.seconds_since_midnight());
+  }
+
   {  // Valid Time 00:01:02
     date_time::Time tm(0, 1, 2);
     assert(0 == tm.hour());
@@ -186,6 +235,24 @@ void TestTime() {
 */
 
 void TestDate() {
+  {  // 0000.01.01
+    date_time::Date dt(0, 1, 1);
+    assert(0 == dt.year());
+    assert(1 == dt.month());
+    assert(1 == dt.day());
+    assert(true == dt.IsLeapYear());
+    assert(std::string("0000.01.01") == date_time::ToString(dt));
+  }
+
+  {  // julian_day_number()
+    date_time::Date dt(2026, 4, 9);
+    assert(2461140 == dt.julian_day_number());
+  }
+  {  // julian_day_number()
+    date_time::Date dt(2000, 01, 01);
+    assert(2451545 == dt.julian_day_number());
+  }
+
   {  // Valid Date 2025.02.01
     date_time::Date dt(2025, 2, 1);
     assert(2025 == dt.year());
@@ -194,6 +261,16 @@ void TestDate() {
     assert(date_time::Weekday::kSaturday == dt.weekday());
     assert(false == dt.IsLeapYear());
     assert(std::string("2025.02.01") == date_time::ToString(dt));
+  }
+
+  {  // Invalid dates.  0000.00.00. Throw invalid argument exception
+    try {
+      date_time::Date dt(0, 0, 0);
+      assert(false);
+    } catch (const std::invalid_argument& error) {
+    } catch (...) {
+      assert(false);
+    }
   }
 
   {  // Invalid dates. Throw invalid argument exception
@@ -246,7 +323,8 @@ void TestDate() {
     }
   }
 
-  {  // Invalid day 32 for months with 31 days. Throw invalid argument exception
+  {  // Invalid day 32 for months with 31 days. Throw invalid argument
+     // exception
     int month_to_check_31[] = {1, 3, 5, 7, 8, 10, 12};
     for (int i : month_to_check_31) {
       try {
@@ -259,7 +337,8 @@ void TestDate() {
     }
   }
 
-  {  // Invalid day 31 for months with 30 days. Throw invalid argument exception
+  {  // Invalid day 31 for months with 30 days. Throw invalid argument
+     // exception
     int month_to_check_30[] = {4, 6, 9, 11};
     for (int i : month_to_check_30) {
       try {
@@ -466,6 +545,24 @@ void TestDate() {
     assert(date2 >= date3);
     assert(date1 >= date3);
   }
+  {  // test weekdays
+    date_time::Date dt(2026, 1, 1);
+    assert(date_time::Weekday::kThursday == dt.weekday());
+    dt.AddDays(1);
+    assert(date_time::Weekday::kFriday == dt.weekday());
+    dt.AddDays(1);
+    assert(date_time::Weekday::kSaturday == dt.weekday());
+    dt.AddDays(1);
+    assert(date_time::Weekday::kSunday == dt.weekday());
+    dt.AddDays(1);
+    assert(date_time::Weekday::kMonday == dt.weekday());
+    dt.AddDays(1);
+    assert(date_time::Weekday::kTuesday == dt.weekday());
+    dt.AddDays(1);
+    assert(date_time::Weekday::kWednesday == dt.weekday());
+    dt.AddDays(1);
+    assert(date_time::Weekday::kThursday == dt.weekday());
+  }
 
   std::cout << "TestDate OK" << '\n';
 }
@@ -475,6 +572,11 @@ void TestDate() {
 */
 
 void TestDateTime() {
+  {  // julian_day_number()
+    date_time::Date dt(2000, 01, 01);
+    assert(2451545 == dt.julian_day_number());
+  }
+
   {  // Valid Date 2025.02.01
     date_time::DateTime dt(2025, 2, 1);
     assert(2025 == dt.year());
@@ -611,7 +713,8 @@ void TestDateTime() {
     }
   }
 
-  {  // Invalid day 32 for months with 31 days. Throw invalid argument exception
+  {  // Invalid day 32 for months with 31 days. Throw invalid argument
+     // exception
     int month_to_check_31[] = {1, 3, 5, 7, 8, 10, 12};
     for (int i : month_to_check_31) {
       bool res{true};
@@ -625,7 +728,8 @@ void TestDateTime() {
     }
   }
 
-  {  // Invalid day 31 for months with 30 days. Throw invalid argument exception
+  {  // Invalid day 31 for months with 30 days. Throw invalid argument
+     // exception
     int month_to_check_30[] = {4, 6, 9, 11};
     for (int i : month_to_check_30) {
       bool res{true};
@@ -987,6 +1091,8 @@ void TestTimediff() {
     date_time::DateTime date1(2024, 12, 31, 11, 0, 0);
     date_time::DateTime date2(2024, 12, 25, 13, 0, 0);
     date_time::TimeDiff time_diff1 = date2 - date1;
+    std::cerr << time_diff1.days() << std::endl;
+    std::cerr << time_diff1.hours() << std::endl;
     assert(time_diff1.days() == -5);
     assert(time_diff1.hours() == -22);
   }

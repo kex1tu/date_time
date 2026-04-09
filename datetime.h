@@ -14,7 +14,7 @@ constexpr int64_t kSecondsPerMinute = 60LL;
 constexpr int64_t kMinutesPerHour = 60LL;
 constexpr int64_t kMinutesPerDay = 1440LL;
 constexpr int64_t kHoursPerDay = 24LL;
-constexpr int64_t kOurEraJulianDayNumber = 1721060LL;  // 0000.01.01
+constexpr int64_t kOurEraJulianDayNumber = 1721057LL;  // 0000.01.01
 
 enum class Weekday : uint8_t {
   kSunday,
